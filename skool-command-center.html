@@ -1,0 +1,1176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Skool Command Center — Run AI Free & Offline</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #0a0e12;
+    --surface: #111820;
+    --card: #161e28;
+    --border: #1e2d3d;
+    --teal: #00c9a7;
+    --teal-dim: #00c9a720;
+    --coral: #ff6b6b;
+    --coral-dim: #ff6b6b20;
+    --text: #e8f0f8;
+    --muted: #5a7a96;
+    --label: #3a5570;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Space Grotesk', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* HEADER */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: -0.3px;
+  }
+
+  .logo-dot {
+    width: 8px; height: 8px;
+    background: var(--teal);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--teal);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .api-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .api-input {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 7px 12px;
+    border-radius: 6px;
+    width: 220px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .api-input:focus { border-color: var(--teal); }
+
+  .api-save {
+    background: var(--teal);
+    color: #0a0e12;
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 12px;
+    padding: 7px 14px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+
+  .api-save:hover { opacity: 0.85; }
+
+  .api-status {
+    font-size: 11px;
+    font-family: var(--mono);
+    color: var(--muted);
+  }
+
+  .api-status.ok { color: var(--teal); }
+
+  /* NAV TABS */
+  .nav {
+    display: flex;
+    gap: 2px;
+    padding: 12px 24px 0;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    overflow-x: auto;
+  }
+
+  .nav-tab {
+    padding: 10px 18px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: color 0.2s, border-color 0.2s;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    font-family: var(--sans);
+  }
+
+  .nav-tab:hover { color: var(--text); }
+  .nav-tab.active { color: var(--teal); border-bottom-color: var(--teal); }
+
+  /* MAIN */
+  .main {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 28px 24px;
+  }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* SECTION HEADER */
+  .section-head {
+    margin-bottom: 20px;
+  }
+
+  .section-title {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.4px;
+    margin-bottom: 4px;
+  }
+
+  .section-sub {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  /* CARDS */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+
+  /* STATS ROW */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+  }
+
+  .stat-val {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--teal);
+    font-family: var(--mono);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .stat-input-val {
+    font-size: 22px;
+    font-weight: 700;
+    font-family: var(--mono);
+    color: var(--teal);
+    background: none;
+    border: none;
+    outline: none;
+    width: 100%;
+    text-align: center;
+    cursor: text;
+  }
+
+  /* FORM ELEMENTS */
+  .field-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .field-label {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 6px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+
+  textarea, select, input[type="text"], input[type="number"] {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 13px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    outline: none;
+    width: 100%;
+    transition: border-color 0.2s;
+    resize: vertical;
+  }
+
+  textarea:focus, select:focus, input:focus { border-color: var(--teal); }
+
+  select option { background: var(--card); }
+
+  /* BUTTONS */
+  .btn-primary {
+    background: var(--teal);
+    color: #0a0e12;
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 13px;
+    padding: 11px 22px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity 0.2s, transform 0.1s;
+  }
+
+  .btn-primary:hover { opacity: 0.88; }
+  .btn-primary:active { transform: scale(0.98); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .btn-coral {
+    background: var(--coral);
+    color: #0a0e12;
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 13px;
+    padding: 11px 22px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity 0.2s;
+  }
+
+  .btn-coral:hover { opacity: 0.88; }
+  .btn-coral:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .btn-ghost {
+    background: none;
+    color: var(--muted);
+    font-family: var(--sans);
+    font-size: 12px;
+    padding: 8px 14px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s;
+  }
+
+  .btn-ghost:hover { color: var(--text); border-color: var(--muted); }
+
+  /* OUTPUT BOX */
+  .output-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    font-size: 13px;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    word-break: break-word;
+    min-height: 80px;
+    color: var(--text);
+    position: relative;
+  }
+
+  .output-box.empty {
+    color: var(--label);
+    font-style: italic;
+  }
+
+  .output-box.loading::after {
+    content: '';
+    display: inline-block;
+    width: 8px; height: 8px;
+    background: var(--teal);
+    border-radius: 50%;
+    animation: blink 0.8s infinite;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.1; }
+  }
+
+  .copy-btn {
+    position: absolute;
+    top: 10px; right: 10px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 11px;
+    font-family: var(--mono);
+    padding: 4px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+
+  .copy-btn:hover { color: var(--teal); }
+
+  /* TRACKER TABLE */
+  .tracker-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .tracker-table th {
+    text-align: left;
+    padding: 10px 12px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    font-weight: 500;
+  }
+
+  .tracker-table td {
+    padding: 11px 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+
+  .tracker-table tr:last-child td { border-bottom: none; }
+
+  .tracker-table input {
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 13px;
+    width: 100%;
+    padding: 0;
+  }
+
+  .badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+
+  .badge-active { background: var(--teal-dim); color: var(--teal); }
+  .badge-trial { background: var(--coral-dim); color: var(--coral); }
+  .badge-new { background: #7c3aed20; color: #a78bfa; }
+
+  /* WEEK PLANNER */
+  .week-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .day-cell {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 8px;
+    font-size: 11px;
+    min-height: 80px;
+  }
+
+  .day-name {
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    font-size: 10px;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+
+  .day-task {
+    font-size: 11px;
+    color: var(--text);
+    line-height: 1.4;
+  }
+
+  /* INCOME GOAL */
+  .goal-bar-wrap {
+    background: var(--surface);
+    border-radius: 6px;
+    height: 8px;
+    overflow: hidden;
+    margin: 10px 0 6px;
+  }
+
+  .goal-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--teal), #00e5b0);
+    border-radius: 6px;
+    transition: width 0.6s ease;
+  }
+
+  .goal-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--muted);
+    font-family: var(--mono);
+  }
+
+  /* CHIP TAGS */
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+  }
+
+  .chip {
+    background: var(--teal-dim);
+    color: var(--teal);
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-family: var(--mono);
+  }
+
+  .chip-coral {
+    background: var(--coral-dim);
+    color: var(--coral);
+  }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--teal);
+    color: #0a0e12;
+    font-weight: 600;
+    font-size: 13px;
+    padding: 12px 20px;
+    border-radius: 8px;
+    z-index: 9999;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none;
+  }
+
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  /* RESPONSIVE */
+  @media (max-width: 640px) {
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .week-grid { grid-template-columns: repeat(3, 1fr); }
+    .header { flex-direction: column; gap: 10px; align-items: flex-start; }
+    .api-input { width: 180px; }
+  }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 640px) { .two-col { grid-template-columns: 1fr; } }
+
+  .flex-end { display: flex; justify-content: flex-end; margin-top: 10px; gap: 8px; }
+  .flex-between { display: flex; justify-content: space-between; align-items: center; }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+
+  .label-tag {
+    font-size: 10px;
+    font-family: var(--mono);
+    color: var(--label);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">
+    <div class="logo-dot"></div>
+    Run AI Free &amp; Offline — Command Center
+  </div>
+  <div class="api-row">
+    <input class="api-input" type="password" id="groqKey" placeholder="gsk_... Groq API key">
+    <button class="api-save" onclick="saveKey()">Save</button>
+    <span class="api-status" id="keyStatus">no key</span>
+  </div>
+</div>
+
+<nav class="nav">
+  <button class="nav-tab active" onclick="switchTab('tracker')">📊 Revenue & Members</button>
+  <button class="nav-tab" onclick="switchTab('leads')">🎯 Find Leads</button>
+  <button class="nav-tab" onclick="switchTab('content')">✍️ Content</button>
+  <button class="nav-tab" onclick="switchTab('outreach')">💬 DMs & Outreach</button>
+  <button class="nav-tab" onclick="switchTab('lessons')">📚 Course Planner</button>
+</nav>
+
+<div class="main">
+
+  <!-- ═══════════════════════════════════════════
+       PANEL 1: REVENUE & MEMBERS
+  ═══════════════════════════════════════════ -->
+  <div class="panel active" id="panel-tracker">
+    <div class="section-head">
+      <div class="section-title">Revenue & Members</div>
+      <div class="section-sub">Track your $17/mo members and income goal in real time</div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-val"><input class="stat-input-val" id="memberCount" type="number" value="0" min="0" oninput="updateCalcs()"></div>
+        <div class="stat-label">Active Members</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="mrrVal" style="color:var(--coral)">$0</div>
+        <div class="stat-label">Monthly Revenue</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="arrVal">$0</div>
+        <div class="stat-label">Annual Run Rate</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="toGoalVal" style="color:var(--muted)">—</div>
+        <div class="stat-label">Members to Goal</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="flex-between" style="margin-bottom:12px">
+        <div>
+          <div class="field-label">Monthly Income Goal</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="color:var(--muted);font-size:16px">$</span>
+            <input type="number" id="incomeGoal" value="500" style="width:100px;font-size:18px;font-family:var(--mono);font-weight:700;color:var(--teal)" oninput="updateCalcs()">
+          </div>
+        </div>
+        <div style="text-align:right">
+          <div class="field-label">Progress</div>
+          <div id="goalPct" style="font-size:20px;font-weight:700;font-family:var(--mono);color:var(--teal)">0%</div>
+        </div>
+      </div>
+      <div class="goal-bar-wrap">
+        <div class="goal-bar" id="goalBar" style="width:0%"></div>
+      </div>
+      <div class="goal-labels">
+        <span id="mrrLabel">$0 MRR</span>
+        <span id="goalLabel">Goal: $500</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="flex-between" style="margin-bottom:14px">
+        <div class="field-label">Member Log</div>
+        <button class="btn-primary" onclick="addMemberRow()" style="padding:7px 14px;font-size:12px">+ Add Member</button>
+      </div>
+      <table class="tracker-table">
+        <thead>
+          <tr>
+            <th>Name / Handle</th>
+            <th>Joined</th>
+            <th>Status</th>
+            <th>Notes</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="memberTable">
+          <tr>
+            <td><input value="Bree — Digital Biz HQ" placeholder="Name"></td>
+            <td><input value="May 2026" placeholder="Date"></td>
+            <td><select style="background:var(--surface);border:1px solid var(--border);color:var(--teal);font-size:11px;padding:4px 6px;border-radius:5px;font-family:var(--mono)">
+              <option>Founding</option><option>Active</option><option>Trial</option><option>Churned</option>
+            </select></td>
+            <td><input value="40-member solopreneur community" placeholder="Notes"></td>
+            <td><button class="btn-ghost" style="padding:5px 10px;font-size:11px" onclick="this.closest('tr').remove();updateCalcs()">✕</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="field-label" style="margin-bottom:10px">AI Revenue Insight</div>
+      <div style="display:flex;gap:10px;margin-bottom:10px">
+        <button class="btn-primary" onclick="getRevenueInsight()">Get Growth Advice</button>
+      </div>
+      <div class="output-box empty" id="revenueOutput">Hit "Get Growth Advice" — AI will give you specific next steps based on your current numbers.</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       PANEL 2: LEAD FINDER
+  ═══════════════════════════════════════════ -->
+  <div class="panel" id="panel-leads">
+    <div class="section-head">
+      <div class="section-title">Find Real Leads</div>
+      <div class="section-sub">AI maps exactly where your audience is hanging out — with ready-to-use posts and search terms</div>
+    </div>
+
+    <div class="card">
+      <div class="field-label" style="margin-bottom:8px">Who are you targeting right now?</div>
+      <select id="leadAudience" style="margin-bottom:12px">
+        <option value="people who want to run AI locally for free">People who want free/local AI (Ollama users)</option>
+        <option value="ADHD entrepreneurs and solopreneurs">ADHD entrepreneurs & solopreneurs</option>
+        <option value="people frustrated with expensive AI subscriptions">People ditching ChatGPT/expensive AI subs</option>
+        <option value="small business owners who want AI automation without code">Non-coders who want AI automation</option>
+        <option value="freelancers and side hustlers building income with AI tools">Freelancers building income with AI</option>
+        <option value="custom">Custom audience...</option>
+      </select>
+      <div id="customAudienceWrap" style="display:none;margin-bottom:12px">
+        <input type="text" id="customAudience" placeholder="Describe your target audience...">
+      </div>
+      <div class="field-label" style="margin-bottom:8px">What angle do you want?</div>
+      <select id="leadAngle" style="margin-bottom:16px">
+        <option value="reddit posts and subreddits to target with organic comments">Reddit organic strategy</option>
+        <option value="Facebook groups to join and posts to make">Facebook group strategy</option>
+        <option value="Discord servers and channels to post in">Discord community strategy</option>
+        <option value="YouTube comment strategy on popular AI tutorial videos">YouTube comment strategy</option>
+        <option value="LinkedIn content strategy to attract this audience">LinkedIn content strategy</option>
+        <option value="full multi-platform lead gen plan">Full multi-platform plan</option>
+      </select>
+      <button class="btn-primary" onclick="findLeads()">Map My Lead Sources</button>
+    </div>
+
+    <div class="card" style="position:relative">
+      <div class="field-label" style="margin-bottom:10px">Your Lead Strategy</div>
+      <button class="copy-btn" onclick="copyOutput('leadsOutput')">copy</button>
+      <div class="output-box empty" id="leadsOutput">Choose your audience and angle above, then hit Map. You'll get real platform names, search terms, post templates, and engagement scripts — no fake names.</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       PANEL 3: CONTENT
+  ═══════════════════════════════════════════ -->
+  <div class="panel" id="panel-content">
+    <div class="section-head">
+      <div class="section-title">Content Generator</div>
+      <div class="section-sub">Post ideas, hooks, and full posts for Reddit, TikTok, Facebook & LinkedIn</div>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="field-label" style="margin-bottom:8px">Content Type</div>
+        <select id="contentType" style="margin-bottom:12px">
+          <option value="a Reddit post that starts a real conversation and funnels readers to my free Skool community">Reddit post (community funnel)</option>
+          <option value="a short TikTok script (under 60 seconds) showing one AI tip from my community">TikTok script (60s)</option>
+          <option value="a Facebook group post that gets engagement and mentions my Skool community">Facebook group post</option>
+          <option value="a LinkedIn plain-text post that gets organic reach about running AI for free">LinkedIn post</option>
+          <option value="5 content hook ideas I can turn into posts this week">5 hook ideas for this week</option>
+          <option value="a Pinterest pin description for an AI tools tip that drives traffic">Pinterest pin</option>
+        </select>
+        <div class="field-label" style="margin-bottom:8px">Topic or angle (optional)</div>
+        <input type="text" id="contentTopic" placeholder="e.g. how I run AI free with Ollama, ADHD productivity hack..." style="margin-bottom:12px">
+        <div class="field-label" style="margin-bottom:8px">Tone</div>
+        <select id="contentTone" style="margin-bottom:16px">
+          <option value="direct, casual, no-BS — like I'm talking to a friend who's tired of paying for AI">Direct & casual</option>
+          <option value="educational and helpful but still chill and approachable">Educational & chill</option>
+          <option value="slightly provocative — calling out the AI subscription trap">Provocative/edgy</option>
+          <option value="story-driven — sharing a personal win or moment">Story-driven</option>
+        </select>
+        <button class="btn-primary" onclick="generateContent()" style="width:100%">Generate Content</button>
+      </div>
+
+      <div class="card" style="position:relative">
+        <div class="field-label" style="margin-bottom:10px">Your Content</div>
+        <button class="copy-btn" onclick="copyOutput('contentOutput')">copy</button>
+        <div class="output-box empty" id="contentOutput" style="min-height:200px">Your generated content will appear here — ready to copy and post.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="field-label" style="margin-bottom:10px">Quick Batch: Generate This Week's Post Ideas</div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <select id="batchPlatform" style="flex:1">
+          <option value="Reddit, TikTok, Facebook, and LinkedIn">All platforms</option>
+          <option value="Reddit">Reddit only</option>
+          <option value="TikTok">TikTok only</option>
+          <option value="Facebook">Facebook only</option>
+          <option value="LinkedIn">LinkedIn only</option>
+        </select>
+        <button class="btn-coral" onclick="generateWeekBatch()">Generate 7 Ideas</button>
+      </div>
+      <div class="output-box empty" id="batchOutput" style="margin-top:12px">7 post ideas — one per day — will appear here.</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       PANEL 4: DMs & OUTREACH
+  ═══════════════════════════════════════════ -->
+  <div class="panel" id="panel-outreach">
+    <div class="section-head">
+      <div class="section-title">DMs & Outreach</div>
+      <div class="section-sub">Write outreach that doesn't feel spammy — genuine invites that convert</div>
+    </div>
+
+    <div class="card">
+      <div class="two-col">
+        <div>
+          <div class="field-label" style="margin-bottom:8px">Outreach Type</div>
+          <select id="outreachType" style="margin-bottom:12px">
+            <option value="a warm DM to someone who commented on an AI post on Reddit">Reddit commenter → DM</option>
+            <option value="a Facebook group DM to someone struggling with AI costs">Facebook group → DM</option>
+            <option value="a Discord DM to someone asking about running AI locally">Discord → DM</option>
+            <option value="a follow-up DM to someone who visited my community but didn't join">Community visitor follow-up</option>
+            <option value="a cold outreach message to a solopreneur/freelancer on LinkedIn">LinkedIn cold outreach</option>
+            <option value="a response to someone who said AI tools are too expensive">Response to AI cost complaint</option>
+          </select>
+          <div class="field-label" style="margin-bottom:8px">What did they say / context?</div>
+          <textarea id="outreachContext" rows="3" placeholder="e.g. They posted 'ChatGPT is too expensive, is there a free alternative?' in r/LocalLLaMA..."></textarea>
+        </div>
+        <div>
+          <div class="field-label" style="margin-bottom:8px">Goal of this message</div>
+          <select id="outreachGoal" style="margin-bottom:12px">
+            <option value="invite them to my free Skool community and mention the $17 tier with the dashboard builder">Invite to Skool community</option>
+            <option value="get them on a quick call or DM conversation">Start a conversation</option>
+            <option value="share a free resource and plant the seed for the community">Share free value first</option>
+            <option value="pitch the $17/month membership directly">Direct membership pitch</option>
+          </select>
+          <div class="field-label" style="margin-bottom:8px">Their apparent pain point</div>
+          <select id="outreachPain" style="margin-bottom:16px">
+            <option value="paying too much for AI tools">Paying too much for AI</option>
+            <option value="not knowing how to run AI locally">Doesn't know how to start with local AI</option>
+            <option value="feeling overwhelmed by AI options">Overwhelmed by AI options</option>
+            <option value="wants to build income with AI but doesn't know where to start">Wants to earn with AI</option>
+            <option value="ADHD and struggles to follow long tutorials">ADHD + can't follow long tutorials</option>
+          </select>
+          <button class="btn-primary" onclick="generateOutreach()" style="width:100%">Write This Message</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="position:relative">
+      <div class="field-label" style="margin-bottom:10px">Your Message</div>
+      <button class="copy-btn" onclick="copyOutput('outreachOutput')">copy</button>
+      <div class="output-box empty" id="outreachOutput" style="min-height:160px">Your outreach message will appear here — written to sound human, not copy-paste spammy.</div>
+    </div>
+
+    <div class="card">
+      <div class="field-label" style="margin-bottom:10px">Objection Crusher</div>
+      <div class="field-row">
+        <select id="objection" style="flex:1">
+          <option value="I don't have time to learn another tool">"I don't have time"</option>
+          <option value="I already pay for ChatGPT, why would I switch">"I already pay for ChatGPT"</option>
+          <option value="Is this actually free or is there a catch">"Is this actually free?"</option>
+          <option value="I'm not technical enough to run AI locally">"I'm not technical enough"</option>
+          <option value="I've tried communities before and they're just ads">"Communities are just ads"</option>
+          <option value="$17 a month is still money I don't have">"$17 is too much right now"</option>
+        </select>
+        <button class="btn-coral" onclick="crushObjection()">Write Response</button>
+      </div>
+      <div class="output-box empty" id="objectionOutput" style="margin-top:10px">Pick an objection you hear often — AI will write you a natural, non-pushy response.</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       PANEL 5: COURSE PLANNER
+  ═══════════════════════════════════════════ -->
+  <div class="panel" id="panel-lessons">
+    <div class="section-head">
+      <div class="section-title">Course Planner</div>
+      <div class="section-sub">Plan lessons in your 10-minute win format — one action, one result</div>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="field-label" style="margin-bottom:8px">Course / Module</div>
+        <select id="courseName" style="margin-bottom:12px">
+          <option value="Zero to Ollama">Zero to Ollama</option>
+          <option value="Self-Hosted n8n Workflows">Self-Hosted n8n Workflows</option>
+          <option value="Build Free Chrome Extensions with AI">Build Free Chrome Extensions with AI</option>
+          <option value="DashBuilder — AI Dashboard Generator">DashBuilder</option>
+          <option value="custom">Custom module...</option>
+        </select>
+        <div id="customCourseWrap" style="display:none;margin-bottom:12px">
+          <input type="text" id="customCourse" placeholder="Module name...">
+        </div>
+        <div class="field-label" style="margin-bottom:8px">What skill or tool does this lesson cover?</div>
+        <input type="text" id="lessonTopic" placeholder="e.g. pulling a model in Ollama, setting up n8n locally..." style="margin-bottom:12px">
+        <div class="field-label" style="margin-bottom:8px">Student starting point</div>
+        <select id="studentLevel" style="margin-bottom:12px">
+          <option value="complete beginner who has never used local AI">Complete beginner</option>
+          <option value="someone who's heard of Ollama but never installed it">Heard of it, never tried</option>
+          <option value="intermediate — has Ollama running, wants to do more">Has Ollama running</option>
+        </select>
+        <div class="field-label" style="margin-bottom:8px">The ONE win they get from this lesson</div>
+        <input type="text" id="lessonWin" placeholder="e.g. Their first local AI model running and responding..." style="margin-bottom:16px">
+        <button class="btn-primary" onclick="planLesson()" style="width:100%">Build This Lesson</button>
+      </div>
+
+      <div class="card" style="position:relative">
+        <div class="field-label" style="margin-bottom:10px">Lesson Plan</div>
+        <button class="copy-btn" onclick="copyOutput('lessonOutput')">copy</button>
+        <div class="output-box empty" id="lessonOutput" style="min-height:260px">Your lesson outline will appear here — formatted for your 10-minute win structure.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="flex-between" style="margin-bottom:12px">
+        <div class="field-label">Course Content Roadmap</div>
+        <button class="btn-coral" onclick="generateRoadmap()">Generate Full Roadmap</button>
+      </div>
+      <select id="roadmapCourse" style="margin-bottom:12px">
+        <option value="Zero to Ollama — from install to custom AI personality with Modelfiles">Zero to Ollama</option>
+        <option value="Self-Hosted n8n Workflows — from install to running automated AI pipelines">Self-Hosted n8n</option>
+        <option value="Build Free Chrome Extensions with AI — from idea to Chrome Web Store">Chrome Extensions</option>
+        <option value="DashBuilder — build and sell AI dashboards with a single HTML file">DashBuilder</option>
+      </select>
+      <div class="output-box empty" id="roadmapOutput">Select a course and hit Generate — you'll get a full module-by-module roadmap with lesson titles and win statements.</div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ───────────────────────────────────────────
+// STATE
+// ───────────────────────────────────────────
+let GROQ_KEY = localStorage.getItem('groq_key') || '';
+
+window.onload = () => {
+  if (GROQ_KEY) {
+    document.getElementById('groqKey').value = GROQ_KEY;
+    document.getElementById('keyStatus').textContent = 'key saved ✓';
+    document.getElementById('keyStatus').classList.add('ok');
+  }
+  updateCalcs();
+
+  // custom audience toggle
+  document.getElementById('leadAudience').addEventListener('change', e => {
+    document.getElementById('customAudienceWrap').style.display = e.target.value === 'custom' ? 'block' : 'none';
+  });
+  document.getElementById('courseName').addEventListener('change', e => {
+    document.getElementById('customCourseWrap').style.display = e.target.value === 'custom' ? 'block' : 'none';
+  });
+};
+
+// ───────────────────────────────────────────
+// API KEY
+// ───────────────────────────────────────────
+function saveKey() {
+  GROQ_KEY = document.getElementById('groqKey').value.trim();
+  localStorage.setItem('groq_key', GROQ_KEY);
+  const s = document.getElementById('keyStatus');
+  s.textContent = GROQ_KEY ? 'key saved ✓' : 'no key';
+  s.className = 'api-status' + (GROQ_KEY ? ' ok' : '');
+  showToast(GROQ_KEY ? 'API key saved' : 'Key cleared');
+}
+
+// ───────────────────────────────────────────
+// GROQ CALL
+// ───────────────────────────────────────────
+async function callGroq(systemPrompt, userPrompt, outputEl) {
+  if (!GROQ_KEY) {
+    setOutput(outputEl, '⚠️ Add your Groq API key at the top first.', false);
+    return null;
+  }
+  const el = document.getElementById(outputEl);
+  el.textContent = '';
+  el.classList.remove('empty');
+  el.classList.add('loading');
+
+  try {
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${GROQ_KEY}`
+      },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        max_tokens: 1200,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ]
+      })
+    });
+
+    const data = await res.json();
+    el.classList.remove('loading');
+
+    if (data.error) {
+      setOutput(outputEl, `Error: ${data.error.message}`, false);
+      return null;
+    }
+
+    const text = data.choices[0].message.content;
+    el.textContent = text;
+    return text;
+
+  } catch (err) {
+    el.classList.remove('loading');
+    setOutput(outputEl, `Network error: ${err.message}`, false);
+    return null;
+  }
+}
+
+function setOutput(id, text, empty = true) {
+  const el = document.getElementById(id);
+  el.textContent = text;
+  el.className = 'output-box' + (empty ? ' empty' : '');
+}
+
+// ───────────────────────────────────────────
+// TAB SWITCHING
+// ───────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ───────────────────────────────────────────
+// REVENUE TRACKER
+// ───────────────────────────────────────────
+function updateCalcs() {
+  const members = parseInt(document.getElementById('memberCount').value) || 0;
+  const goal = parseFloat(document.getElementById('incomeGoal').value) || 500;
+  const mrr = members * 17;
+  const arr = mrr * 12;
+  const pct = Math.min(100, Math.round((mrr / goal) * 100));
+  const toGoal = Math.max(0, Math.ceil((goal - mrr) / 17));
+
+  document.getElementById('mrrVal').textContent = '$' + mrr.toLocaleString();
+  document.getElementById('arrVal').textContent = '$' + arr.toLocaleString();
+  document.getElementById('toGoalVal').textContent = toGoal > 0 ? toGoal + ' more' : '🎯 Hit!';
+  document.getElementById('toGoalVal').style.color = toGoal === 0 ? 'var(--teal)' : 'var(--muted)';
+  document.getElementById('goalPct').textContent = pct + '%';
+  document.getElementById('goalBar').style.width = pct + '%';
+  document.getElementById('mrrLabel').textContent = '$' + mrr.toLocaleString() + ' MRR';
+  document.getElementById('goalLabel').textContent = 'Goal: $' + goal.toLocaleString();
+}
+
+function addMemberRow() {
+  const tbody = document.getElementById('memberTable');
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input placeholder="Name / handle"></td>
+    <td><input value="${new Date().toLocaleDateString('en-US',{month:'short',year:'numeric'})}" placeholder="Date"></td>
+    <td><select style="background:var(--surface);border:1px solid var(--border);color:var(--teal);font-size:11px;padding:4px 6px;border-radius:5px;font-family:var(--mono)">
+      <option>Active</option><option>Founding</option><option>Trial</option><option>Churned</option>
+    </select></td>
+    <td><input placeholder="Notes"></td>
+    <td><button class="btn-ghost" style="padding:5px 10px;font-size:11px" onclick="this.closest('tr').remove()">✕</button></td>
+  `;
+  tbody.appendChild(tr);
+}
+
+async function getRevenueInsight() {
+  const members = document.getElementById('memberCount').value || 0;
+  const goal = document.getElementById('incomeGoal').value || 500;
+  const mrr = members * 17;
+
+  const sys = `You are a blunt, practical growth advisor for a solo Skool community owner. You give specific, actionable advice — no fluff, no generic tips. The community is called "Run AI Free and Offline" — it teaches people to use AI tools at zero cost using Ollama and free APIs like Groq. The $17/month membership includes a copy of an AI dashboard builder tool (DashBuilder) that members can resell for $200+. Be direct like a friend who actually knows what they're talking about.`;
+
+  const prompt = `My community currently has ${members} paid members at $17/month = $${mrr} MRR. My goal is $${goal}/month.
+
+Give me 3-5 specific, actionable next steps I can take THIS WEEK to grow toward my goal. Focus on free organic methods — Reddit, Facebook groups, Discord, YouTube comments, LinkedIn. Tell me exactly what to do, not vague advice.`;
+
+  await callGroq(sys, prompt, 'revenueOutput');
+}
+
+// ───────────────────────────────────────────
+// LEAD FINDER
+// ───────────────────────────────────────────
+async function findLeads() {
+  let audience = document.getElementById('leadAudience').value;
+  if (audience === 'custom') {
+    audience = document.getElementById('customAudience').value || 'people interested in free AI tools';
+  }
+  const angle = document.getElementById('leadAngle').value;
+
+  const sys = `You are a lead generation expert for a Skool community called "Run AI Free and Offline." The community teaches people to use AI locally for free using Ollama and Groq. The $17/month tier includes an AI dashboard builder tool members can resell. 
+
+You give REAL, SPECIFIC platform and community names — actual subreddits, actual Facebook group names (describe them so they can be searched), actual Discord servers, real search terms. Never make up fake names. If you list a subreddit, it must actually exist. Give practical, ready-to-use strategies with real examples of what to post or search.`;
+
+  const prompt = `Target audience: ${audience}
+
+Strategy to map: ${angle}
+
+Give me:
+1. The exact platforms/communities/groups/subreddits to target (real names)
+2. The exact search terms to find more of these people
+3. 2-3 specific things to post or comment (ready to copy, don't write "[your community name]" placeholders — the community is "Run AI Free and Offline" on Skool, the link is skool.com/run-ai-free-and-offline or similar)
+4. The best time/approach to engage without looking like spam
+
+Be specific. Real platform names only.`;
+
+  await callGroq(sys, prompt, 'leadsOutput');
+}
+
+// ───────────────────────────────────────────
+// CONTENT GENERATOR
+// ───────────────────────────────────────────
+async function generateContent() {
+  const type = document.getElementById('contentType').value;
+  const topic = document.getElementById('contentTopic').value || 'running AI for free with Ollama';
+  const tone = document.getElementById('contentTone').value;
+
+  const sys = `You write content for a solo creator named Sin (also goes by Tia) who runs "Run AI Free and Offline" — a Skool community teaching people to use AI locally for free with tools like Ollama and Groq. She has ADHD and her brand is direct, no-BS, and genuinely helpful. Her $17/month membership includes a dashboard builder tool members can resell. She builds Chrome extensions under Spark Extensions. Write in her voice: casual, direct, real. No corporate speak. No fake enthusiasm.`;
+
+  const prompt = `Write ${type}.
+
+Topic/angle: ${topic}
+Tone: ${tone}
+
+Write it ready to post. Don't add instructions or preamble. Just the content.`;
+
+  await callGroq(sys, prompt, 'contentOutput');
+}
+
+async function generateWeekBatch() {
+  const platform = document.getElementById('batchPlatform').value;
+
+  const sys = `You write content for Sin who runs "Run AI Free and Offline" on Skool — teaching free/local AI with Ollama and Groq. Direct, casual voice. $17/month membership includes a resellable dashboard builder. No fake enthusiasm, no placeholders.`;
+
+  const prompt = `Generate 7 post ideas for ${platform} — one for each day of the week.
+
+For each: give the platform, a hook line (the actual opening), and the core angle in 1-2 sentences. Number them Day 1 through Day 7. Make them varied — mix educational, story-driven, provocative, and community invite angles. All tie back to running AI free and offline.`;
+
+  await callGroq(sys, prompt, 'batchOutput');
+}
+
+// ───────────────────────────────────────────
+// OUTREACH
+// ───────────────────────────────────────────
+async function generateOutreach() {
+  const type = document.getElementById('outreachType').value;
+  const context = document.getElementById('outreachContext').value || 'no additional context';
+  const goal = document.getElementById('outreachGoal').value;
+  const pain = document.getElementById('outreachPain').value;
+
+  const sys = `You write outreach messages for Sin who runs "Run AI Free and Offline" on Skool. The community teaches free/local AI with Ollama and Groq. $17/month includes a dashboard builder members can resell for $200+.
+
+Write messages that sound like a real person — not a marketer, not a bot. Short, conversational, genuine. No "Hey there!" No "I noticed your post and thought..." clichés. Get to the point. Don't be pushy.`;
+
+  const prompt = `Outreach scenario: ${type}
+Context about what they said/did: ${context}
+Their pain point: ${pain}
+Goal of this message: ${goal}
+
+Write the message. Keep it under 150 words. Sound like a human who genuinely wants to help, not sell.`;
+
+  await callGroq(sys, prompt, 'outreachOutput');
+}
+
+async function crushObjection() {
+  const objection = document.getElementById('objection').value;
+
+  const sys = `You write responses to objections for Sin who runs "Run AI Free and Offline" on Skool. Honest, direct, not pushy. The community is genuinely free to join, with a $17/month paid tier that includes a dashboard builder tool members can resell. Keep responses short and real.`;
+
+  const prompt = `Someone said: "${objection}"
+
+Write a natural, non-pushy response that addresses this honestly. Under 100 words. Sound like a real person, not a sales script.`;
+
+  await callGroq(sys, prompt, 'objectionOutput');
+}
+
+// ───────────────────────────────────────────
+// LESSON PLANNER
+// ───────────────────────────────────────────
+async function planLesson() {
+  let course = document.getElementById('courseName').value;
+  if (course === 'custom') course = document.getElementById('customCourse').value || 'AI Tools';
+  const topic = document.getElementById('lessonTopic').value || 'getting started';
+  const level = document.getElementById('studentLevel').value;
+  const win = document.getElementById('lessonWin').value || 'complete one working setup';
+
+  const sys = `You design short, focused lessons for Sin's Skool community "Run AI Free and Offline." Every lesson follows her 10-minute win format: one concept, one action, one result. Students have ADHD or busy lives — lessons must be skimmable, action-first, no fluff. Format: Title, The Win (1 sentence), Why It Matters (2-3 sentences), Steps (numbered, short), The Test (how they know it worked), What's Next (1 sentence teaser).`;
+
+  const prompt = `Course: ${course}
+Lesson topic: ${topic}
+Student level: ${level}
+The one win from this lesson: ${win}
+
+Write the full lesson outline in the 10-minute win format.`;
+
+  await callGroq(sys, prompt, 'lessonOutput');
+}
+
+async function generateRoadmap() {
+  const course = document.getElementById('roadmapCourse').value;
+
+  const sys = `You design course structures for Sin's Skool community "Run AI Free and Offline." Every lesson is a 10-minute win. Lessons are action-first, ADHD-friendly. Format roadmaps as: Module name → list of lessons with title and one-sentence win statement for each.`;
+
+  const prompt = `Create a full course roadmap for: ${course}
+
+Structure it as 3-5 modules, each with 3-5 lessons. For each lesson give: the lesson title and the single win statement ("After this lesson, you will..."). Make it practical — someone should be able to follow this and actually build/run the thing by the end.`;
+
+  await callGroq(sys, prompt, 'roadmapOutput');
+}
+
+// ───────────────────────────────────────────
+// UTILITIES
+// ───────────────────────────────────────────
+function copyOutput(id) {
+  const text = document.getElementById(id).textContent;
+  navigator.clipboard.writeText(text).then(() => showToast('Copied!'));
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+</script>
+</body>
+</html>
